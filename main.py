@@ -1,3 +1,5 @@
-USER_NAME = 'Alex'
+from requests import get
 
-print('Hello from {}'.format(USER_NAME))
+response = get('https://playground.learnqa.ru/api/get_text')
+
+print(response)
