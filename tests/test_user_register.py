@@ -1,7 +1,6 @@
 import requests
 import pytest
 
-from datetime import datetime
 from random import choice
 from string import ascii_letters
 
@@ -10,20 +9,8 @@ from lib.assertions import Assertions
 
 
 class TestUserRegister(BaseCase):
-    def setup(self):
-        base_part = 'learnqa'
-        domain = 'example.com'
-        random_part = datetime.now().strftime('%m%d%Y%H%M%S')
-        self.email = f'{base_part}{random_part}@{domain}'
-
     def test_create_user_successfully(self):
-        data = {
-            'password': '123',
-            'username': 'learnqa',
-            'firstName': 'learnqa',
-            'lastName': 'learnqa',
-            'email': self.email
-        }
+        data = BaseCase.prepare_registration_data(self)
 
         response = requests.post('https://playground.learnqa.ru/api/user/', data=data)
 
@@ -32,19 +19,12 @@ class TestUserRegister(BaseCase):
 
     def test_create_user_with_existing_email(self):
         email = 'vinkotov@example.com'
-        data = {
-            'password': '123',
-            'username': 'learnqa',
-            'firstName': 'learnqa',
-            'lastName': 'learnqa',
-            'email': email
-        }
+        data = BaseCase.prepare_registration_data(self, email)
 
         response = requests.post('https://playground.learnqa.ru/api/user/', data=data)
 
         Assertions.assert_code_status(response, 400)
-        assert response.content.decode('utf-8') == f'Users with email \'{email}\' already exists', \
-            f'Unexpected response content {response.content}'
+        Assertions.assert_response_content(response, f'Users with email \'{email}\' already exists')
 
     def test_create_user_with_incorrect_email(self):
         data = BaseCase.prepare_registration_data(self, 'incorrectemail.com')
