@@ -3,6 +3,9 @@ import json
 from requests import Response
 from datetime import datetime
 
+from lib.my_requests import MyRequests
+from lib.assertions import Assertions
+
 
 class BaseCase:
     def get_cookie(self, response: Response, cookie_name):
@@ -27,7 +30,7 @@ class BaseCase:
         if email is None:
             base_part = 'learnqa'
             domain = 'example.com'
-            random_part = datetime.now().strftime('%m%d%Y%H%M%S')
+            random_part = datetime.now().strftime('%m%d%Y%H%M%S%f')
             email = f'{base_part}{random_part}@{domain}'
         return {
             'password': '123',
@@ -37,3 +40,10 @@ class BaseCase:
             'email': email
         }
 
+    def create_new_user(self, register_data):
+        response = MyRequests.post('/user/', data=register_data)
+
+        Assertions.assert_code_status(response, 200)
+        Assertions.assert_json_has_key(response, 'id')
+
+        return response
