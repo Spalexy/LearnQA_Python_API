@@ -1,9 +1,12 @@
+import allure
+
 from lib.base_case import BaseCase
 from lib.assertions import Assertions
 from lib.my_requests import MyRequests
 
 
 class TestUserEdit(BaseCase):
+    @allure.severity(allure.severity_level.NORMAL)
     def test_edit_just_created_user(self):
         # REGISTER
         register_data = self.prepare_registration_data()
@@ -52,6 +55,7 @@ class TestUserEdit(BaseCase):
             'Wrong name of the user after edit'
         )
 
+    @allure.severity(allure.severity_level.BLOCKER)
     def test_edit_user_without_authorisation(self):
         # REGISTER
         register_data = self.prepare_registration_data()
@@ -69,6 +73,7 @@ class TestUserEdit(BaseCase):
         Assertions.assert_code_status(edit_response, 400)
         Assertions.assert_response_content(edit_response, 'Auth token not supplied')
 
+    @allure.severity(allure.severity_level.BLOCKER)
     def test_edit_other_user(self):
         # FIRST USER REGISTER
         first_user_register_data = self.prepare_registration_data()
@@ -120,6 +125,7 @@ class TestUserEdit(BaseCase):
             'User name has been changed'
         )
 
+    @allure.severity(allure.severity_level.CRITICAL)
     def test_edit_user_with_incorrect_email(self):
         # REGISTER
         register_data = self.prepare_registration_data()
@@ -152,10 +158,12 @@ class TestUserEdit(BaseCase):
         Assertions.assert_code_status(edit_response, 400)
         Assertions.assert_response_content(edit_response, 'Invalid email format')
 
+    @allure.severity(allure.severity_level.CRITICAL)
     def test_edit_user_to_one_symbol_name(self):
         # REGISTER
         register_data = self.prepare_registration_data()
-        register_response = self.create_new_user(register_data)
+        with allure.step('register new user'):
+            register_response = self.create_new_user(register_data)
 
         email = register_data['email']
         password = register_data['password']
@@ -165,7 +173,8 @@ class TestUserEdit(BaseCase):
             'email': email,
             'password': password
         }
-        login_response = MyRequests.post('/user/login', data=login_data)
+        with allure.step('login as created user'):
+            login_response = MyRequests.post('/user/login', data=login_data)
 
         auth_sid = self.get_cookie(login_response, 'auth_sid')
         token = self.get_header(login_response, 'x-csrf-token')
@@ -174,12 +183,13 @@ class TestUserEdit(BaseCase):
         user_id = self.get_json_value(register_response, 'id')
         new_first_name = 'f'
 
-        response3 = MyRequests.put(
-            f'/user/{user_id}',
-            headers={'x-csrf-token': token},
-            cookies={'auth_sid': auth_sid},
-            data={'firstName': new_first_name}
-        )
+        with allure.step('edit created user'):
+            response3 = MyRequests.put(
+                f'/user/{user_id}',
+                headers={'x-csrf-token': token},
+                cookies={'auth_sid': auth_sid},
+                data={'firstName': new_first_name}
+            )
 
         Assertions.assert_code_status(response3, 400)
         Assertions.assert_response_content(response3, '{"error":"Too short value for field firstName"}')

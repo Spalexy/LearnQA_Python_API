@@ -1,4 +1,4 @@
-import requests
+import allure
 
 from lib.base_case import BaseCase
 from lib.assertions import Assertions
@@ -6,6 +6,7 @@ from lib.my_requests import MyRequests
 
 
 class TestUserDelete(BaseCase):
+    @allure.severity(allure.severity_level.BLOCKER)
     def test_try_to_delete_protected_user(self):
         # LOGIN
         login_data = {
@@ -27,6 +28,7 @@ class TestUserDelete(BaseCase):
         Assertions.assert_code_status(delete_response, 400)
         Assertions.assert_response_content(delete_response, 'Please, do not delete test users with ID 1, 2, 3, 4 or 5.')
 
+    @allure.severity(allure.severity_level.NORMAL)
     def test_delete_just_created_user(self):
         # REGISTER
         register_data = self.prepare_registration_data()
@@ -59,6 +61,7 @@ class TestUserDelete(BaseCase):
         Assertions.assert_code_status(get_user_response, 404)
         Assertions.assert_response_content(get_user_response, 'User not found')
 
+    @allure.severity(allure.severity_level.BLOCKER)
     def test_try_to_delete_other_user(self):
         # FIRST USER REGISTER
         first_user_register_data = self.prepare_registration_data()
